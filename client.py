@@ -1,23 +1,27 @@
 import asyncio
 
 
-HOST = 'localhost'
-PORT = 9095
+async def tcp_echo_client(message):
+    reader, writer = await asyncio.open_connection('127.0.0.1', port)
 
-
-async def tcp_echo_client(host, port):
-    reader, writer = await asyncio.open_connection(host, port)
-    message = 'Hello, world'
-
+    print(f'Отправленно: {message}')
     writer.write(message.encode())
-    await writer.drain()
 
     data = await reader.read(100)
+    print(f'Полученно: {data.decode()}')
+
+    print('Отключенно')
     writer.close()
-    # await writer.wait_closed()
 
-# asyncio.run(tcp_echo_client(HOST, PORT))
+try:
+    port = int(input('Введите порт: '))
+    if not 1024 <= port <= 65535:
+        raise ValueError
+except ValueError:
+    port = 9090
 
+
+message = input('Введите сообщение: ')
 loop = asyncio.get_event_loop()
-task = loop.create_task(tcp_echo_client(HOST, PORT))
-loop.run_until_complete(task)
+loop.run_until_complete(tcp_echo_client(message))
+loop.close()
